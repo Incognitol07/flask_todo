@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block body %}
+    <div  class="content">
+        <h1>Listify</h1>
+        <!-- Flash messages for success/error notifications -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div>
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% if tasks|length < 1 %}
+        <h4>There are no tasks. Create one below!</h4>
+        {% else %}
+        <table>
+            <tr>
+                <th>Task</th>
+                <th>Added</th>
+                <th>Actions</th>
+            </tr>
+            {% for task in tasks %}
+                <tr>
+                    <td>{{  task.content }}</td>
+                    <td>{{ task.date_created.date() }}</td>
+                    <td>
+                        <a href="/delete/{{ task.id }}">Delete</a>
+                        <br>
+                        <a href="/update/{{ task.id }}">Update</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        <form action="/" method="POST">
+            <input type="text" name="content" required id="content">
+            <input type="submit" value="Add task">
+        </form>
+        <br>
+        <a href="/logout">Logout</a>
+    </div>
+{% endblock %}

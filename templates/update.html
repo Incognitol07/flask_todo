@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block body %}
+    <div class="content">
+        <h1>Update Task</h1>
+        
+        <!-- Flash messages for success/error notifications -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div>
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Form to update the task -->
+        <form action="{{ url_for('update_task', task_id=task.id) }}" method="POST">
+            <input type="text" name="content" required id="content" value="{{ task.content }}">
+            <input type="submit" value="Update task">
+        </form>
+    </div>
+{% endblock %}

@@ -1,15 +1,13 @@
-import os
 from flask import Flask, render_template, url_for, request, redirect, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-
-# Replace with your actual PostgreSQL connection string
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgres://default:************@ep-orange-sound-a42ko1bb.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 app.config['SECRET_KEY'] = 'e393d299bd4e957af1dce7b7b4a64af3'
 db = SQLAlchemy(app)
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -22,6 +20,7 @@ class User(db.Model):
     
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
 
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -94,9 +93,8 @@ def index():
                 db.session.commit()
                 flash('Task added successfully!', 'success')
                 return redirect("/")
-            except Exception as e:
+            except:
                 flash('There was an issue adding your task.', 'error')
-                print(e)  # For debugging purposes
     
     tasks = Todo.query.filter_by(user_id=user_id).order_by(Todo.date_created).all()
     return render_template("index.html", tasks=tasks)
@@ -115,11 +113,11 @@ def delete(id):
         db.session.commit()
         flash('Task deleted successfully!', 'success')
         return redirect('/')
-    except Exception as e:
+    except:
         flash('There was a problem deleting that task.', 'error')
-        print(e)  # For debugging purposes
         return redirect('/')
 
+# Update Task Route
 # Update Task Route
 @app.route("/update/<int:id>", methods=['GET', 'POST'])
 def update(id):
@@ -130,17 +128,21 @@ def update(id):
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        task.content = request.form['content'].title()
-        try:
-            db.session.commit()
-            flash('Task updated successfully!', 'success')
-            return redirect('/')
-        except Exception as e:
-            flash('There was an issue updating your task.', 'error')
-            print(e)  # For debugging purposes
+        task_content = request.form['content'].title()
+        if task_content:
+            task.content = task_content
+            try:
+                db.session.commit()
+                flash('Task updated successfully!', 'success')
+                return redirect('/')
+            except:
+                flash('There was an issue updating your task.', 'error')
+        else:
+            flash('Task content cannot be empty.', 'error')
     return render_template('update.html', task=task)
+
 
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all()  # This will create the tables based on your models
+        db.create_all()
     app.run(debug=True)

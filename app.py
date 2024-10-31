@@ -1,24 +1,14 @@
-import os
 from flask import Flask, render_template, url_for, request, redirect, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-
-# Check if running on Vercel
-if os.getenv('VERCEL') is None:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-else:
-    # Using in-memory SQLite for Vercel (not recommended for production)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'dev'
 
 db = SQLAlchemy(app)
-
-# The rest of your code remains the same...
-
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -152,9 +142,9 @@ def update(id):
             flash('Task content cannot be empty.', 'error')
     return render_template('update.html', task=task)
 
-
+with app.app_context():
+    db.create_all()
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
+    
     app.run(debug=True)
 
